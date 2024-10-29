@@ -3,7 +3,6 @@
 #include <Adafruit_NeoPixel.h>
 #include <SPI.h>
 #include <SD.h>
-#include <IRremote.h>
 
 #define OUT1 8                      // pin led strip 1
 #define OUT2 9                      // pin led strip 2
@@ -19,11 +18,6 @@ uint32_t volumesize;
 #define nomDuFichier "genome.txt" 
 File genome_file;
 bool fromSD;                        // pas de SD on va afficher des bases au pif
-
-int irInput = 7;                    // pin pour le récepteur IR
-int modePin = 5;                    // pour le bouton poussoir de sélection du mode
-IRrecv irrecv(irInput);
-decode_results results;
 
 char base2;                          // contient la base lue dans le fichier
 int guanine_color[3]={0,128,0};     // vert RGB
@@ -47,13 +41,9 @@ void decalage();
 void setup() {
   Serial.begin(9600);
   Serial.println("Let's begin !!");
-  pinMode(modePin, INPUT);
-  digitalWrite(modePin, HIGH);
+
   helice1.begin(); 
   helice2.begin();
-
-  irrecv.enableIRIn();
-  randomSeed(analogRead(A0));
 
   // carte SD
   pinMode(10, OUTPUT);
@@ -98,7 +88,7 @@ void loop() {
     Serial.println(counter);        
     counter = 0;
   } else {
-    Serial.println("Fichier génome non trouvé");  // on fait clignoter les hélices en rouge du coup 
+    Serial.println("Allumage par défaut");  // on fait clignoter les hélices en rouge du coup 
     for (int i=0; i<100; i++)
     {
       if (i % 2 == 0) {
@@ -109,18 +99,6 @@ void loop() {
       lights_up(delai);                  // on allume les leds !! Le délai est réglable avec le potar
       decalage();                      // décalage des leds pour la prochaine lecture
     }
-  }
-
-  if(irrecv.decode(&results)){
-    Serial.println(results.value);
-    if(results.value==4294967295){    // change the code for the ir remote here
-      mode++;
-      if(mode==modeCount){
-       mode=0;
-      }
-      delay(100);
-    }
-    irrecv.resume();
   }
 
   position+= (analogRead(A0)/128.0);    
