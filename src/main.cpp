@@ -8,7 +8,7 @@
 #define OUT2 9                      // pin led strip 2
 Adafruit_NeoPixel helice1 = Adafruit_NeoPixel(11,OUT1, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel helice2 = Adafruit_NeoPixel(11,OUT2, NEO_GRB + NEO_KHZ800);
-int delai = 0;                      // delai entre chaque mise à jour allumage des bandes led
+int delai = 200;                      // delai entre chaque mise à jour allumage des bandes led
 
 #define SD_CS 10                    // pin CS pour le lecteur SD
 Sd2Card CarteSD;
@@ -20,16 +20,13 @@ File genome_file;
 bool fromSD;                        // pas de SD on va afficher des bases au pif
 
 char base2;                          // contient la base lue dans le fichier
-int guanine_color[3]={0,128,0};     // vert RGB
+int guanine_color[3]={1,128,0};     // vert RGB
 int cytosine_color[3]={255,0,0};    // rouge RGB
-int adenine_color[3]={0,0,255};     // bleu RGB
-int thymine_color[3]={255,255,0};   // jaune RGB
+int adenine_color[3]={2,0,255};     // bleu RGB
+int thymine_color[3]={250,255,0};   // jaune RGB
 int adn[2][11][3];                  // couleurs des hélices à l'instant t
-int position_helice;                // là où on doit mettre la couleur dans le tableau ADN
-int mode = 0; 
-int modeCount = 8;
+long counter = 0;
 
-int counter = 0;
 boolean buttonReady = true;
 int position = 0;
 
@@ -48,18 +45,19 @@ void setup() {
   // carte SD
   pinMode(10, OUTPUT);
   SD.begin(SD_CS);
+
+  delai = 1000-analogRead(A0); // valeur initiale du délai via le potar
 }
 
 // ********************************************* LOOP ******************************************
 // *********************************************************************************************
 
 void loop() {
-  // quelques initialisations de variables
-  position_helice = 0;            // premier étage
   for(int k=0;k<2;k++)            // init du tableau des couleurs des hélices
       for(int i=0;i<11;i++)
         for(int j=0;j<3;j++)
         adn[k][i][j] = 0;
+        
   fromSD = get_carte_SD();          // init SD. Indique si on a réussi l'init
 
   if (fromSD) {
@@ -81,6 +79,8 @@ void loop() {
         //Serial.print(base); Serial.println(base2);delay(250);
         lights_up(delai);                // on allume les leds !! Le délai est réglable avec le potar
         decalage();                    // décalage des leds pour la prochaine lecture
+
+        delai = 1000-analogRead(A0);
       }
     }
     genome_file.close();  
@@ -101,9 +101,7 @@ void loop() {
     }
   }
 
-  position+= (analogRead(A0)/128.0);    
-  
-  delay(20);
+ 
 }
 
 // ********************************************* FUNCTIONS *************************************
@@ -207,7 +205,7 @@ void fill_adn_tab(char base) {
 void lights_up(int valeur_delai) {
   for(int i=0;i<11;i++){
     helice1.setPixelColor(i,helice1.Color(adn[0][i][0],adn[0][i][1],adn[0][i][2]));
-    helice1.setPixelColor(i,helice1.Color(adn[1][i][0],adn[1][i][1],adn[1][i][2]));
+    helice2.setPixelColor(i,helice2.Color(adn[1][i][0],adn[1][i][1],adn[1][i][2]));
   } 
   helice1.show();
   helice2.show();
@@ -215,7 +213,7 @@ void lights_up(int valeur_delai) {
 }
 
 void decalage() {
-  for (int i=10;i<1;i--) {
+  for (int i=10;i>0;i--) {
     adn[0][i][0] = adn[0][i-1][0];
     adn[0][i][1] = adn[0][i-1][1];
     adn[0][i][2] = adn[0][i-1][2];
