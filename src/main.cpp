@@ -47,6 +47,7 @@ void setup() {
   SD.begin(SD_CS);
 
   delai = 1000-analogRead(A0); // valeur initiale du délai via le potar
+  if (delai<30) { delai = 30;}  // pour éviter de se retrouver avec un delai négatif qui peut bloquer l'arduino
 }
 
 // ********************************************* LOOP ******************************************
@@ -81,6 +82,7 @@ void loop() {
         decalage();                    // décalage des leds pour la prochaine lecture
 
         delai = 1000-analogRead(A0);
+        if (delai<30) { delai = 30;}  // pour éviter de se retrouver avec un delai négatif ou trop bas
       }
     }
     genome_file.close();  
