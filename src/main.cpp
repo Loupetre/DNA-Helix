@@ -70,8 +70,8 @@ void loop() {
   }
   if (fromSD) {
     // lecture de la première ligne qui indique de quel génome il s'agit
-    Serial.println(genome_file.readStringUntil('\n'));  // lecture de la première ligne - le titre -
-    while (genome_file.available()) {             // Lecture du reste : il faut déterminer le complément
+    Serial.println(genome_file.readStringUntil('\n'));  // lecture de la première ligne du fichier qui est le titre du génome
+    while (genome_file.available()) {             // Lecture du génome
       char base = genome_file.read();             
       counter++;
       if (base != '\n' && base != '\r')
@@ -81,7 +81,7 @@ void loop() {
         lights_up(delai);                // on allume les leds !! Le délai est réglable avec le potar
         decalage();                    // décalage des leds pour la prochaine lecture
 
-        delai = 1000-analogRead(A0);
+        delai = 1000-analogRead(A0);  // on lit la valeur du potar pour adapter la vitesse de défilement
         if (delai<30) { delai = 30;}  // pour éviter de se retrouver avec un delai négatif ou trop bas
       }
     }
@@ -89,6 +89,8 @@ void loop() {
     Serial.print("Nombre de bases lues : ");
     Serial.println(counter);        
     counter = 0;
+    delai(10000);                     // delai de 10 secondes avant de rebooter pour recommencer
+    ESP.restart();
   } else {
     Serial.println("Allumage par défaut");  // on fait clignoter les hélices en rouge du coup 
     for (int i=0; i<100; i++)
